@@ -27,7 +27,7 @@ The libdramf module only provides one function:
 DRAMF instances have a few more functions:
     The primary usage is to simply write in and out of the table. Metatables handle the indexing and such of functions added.
 
-    :GetLibrary
+    :GetLibrary(LibraryName)
         -- This function creates a DRAMF inside of a DRAMF only accessible from the original DRAMF for the sake of organization.
         -- For example, if you had a very large module that provided a large amount of functions, it may make sense to package it inside of 
         -- this pre-exisiting DRAMF.
