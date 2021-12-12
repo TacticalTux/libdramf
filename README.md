@@ -9,8 +9,7 @@ In total, it could be considered to be a dependency flattener.
 Best of all, it's only around ~200 lines, and keeps it short and simple.
 
 The libdramf module only provides one function:
-    :GetDramf
-        -- This function gets a DRAMF instance that can be used across script.
+    :GetDramf(Sources, DramfName, OverwriteOld) -- This function gets a DRAMF instance that can be used across script.
 
         Sources (table, function, instance, or nil)
             Defines what functions are to be added to the DRAMF instance whenever it is acquired / created. Functions can either be passed as a table of functions, as a singular function,
@@ -37,7 +36,7 @@ DRAMF instances have a few more functions:
             The name of the Library being acquired.
     
 
-    :GetGlobal
+    :GetGlobal(GlobalName, WaitTime)
         -- GetGlobal acquires a global variable that is shared among the DRAMF instance to allow for cross-module sharing of information.
         
         GlobalName (string)
@@ -47,7 +46,7 @@ DRAMF instances have a few more functions:
             If a global does not exist and a positive number is passed for WaitTime, the request will wait for the specified time before returning nil if the global does not appear.
     
 
-    :SetGlobal
+    :SetGlobal(GlobalName, Value)
         -- Sets a global value
 
         GlobalName (string)
