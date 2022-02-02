@@ -11,7 +11,7 @@ function test1.DramfInit(Core)
     Core.TestFunction2 = function()
         print("woah cross script flushed")
     end
-    Core:SetGlobal("AmGaming", true)
+    Core.Shared.AmGaming = true
 end
 
 return test1
