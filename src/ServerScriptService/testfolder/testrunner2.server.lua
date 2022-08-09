@@ -1,0 +1,6 @@
+task.wait(12.5)
+print("testrunner2 is now activating, and will be trying to get the DRAMF instance by name.")
+local libdramf = require(script.Parent.Parent:WaitForChild("libdramf"))
+local dramf = libdramf:GetDramf(nil, "TestDramfByName")
+dramf.TestFunction()
+print("Called TestFunction from testrunner2")

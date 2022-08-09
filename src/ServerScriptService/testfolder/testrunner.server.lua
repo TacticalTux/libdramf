@@ -1,2 +1,2 @@
 local libdramf = require(script.Parent.Parent:WaitForChild("libdramf"))
-libdramf:GetDramf(script.Parent, "hello owo")
+libdramf:GetDramf(script.Parent, "TestDramfByName")

@@ -16,9 +16,14 @@ function DramfCore.ProtectedFunctions:GetLibrary(LibraryName: string): {}
 end
 
 -- local func for waiting for the value in the table
-local function WaitForValueInTable(Table : table, Index : any): any
+-- this could use a bindable instead of waiting for efficiency, but it probably isn't needed
+function DramfCore.ProtectedFunctions.WaitForValueInTable(Table : table, Index : any, Timeout : number): any
+	if Timeout == nil then
+		Timeout = math.huge
+	end
 	local CallRunTime = 0
-	while CallRunTime < 10 do
+	local WarnTime = 15
+	while CallRunTime <= Timeout do
 		CallRunTime += 0.1
 		local Value = rawget(Table, Index)
 		if Value then
@@ -26,8 +31,16 @@ local function WaitForValueInTable(Table : table, Index : any): any
 		else
 			task.wait(0.1)
 		end
+
+		if WarnTime - CallRunTime <= 0 then
+			warn("Failing to get", Index, "from table.")
+			warn(debug.traceback("Traceback:"))
+			WarnTime *= 2
+		end
 	end
 	warn("Waiting for", Index, "has failed. Returning nil.")
+	warn(debug.traceback("Traceback:"))
+	print(Table)
 end
 
 -- internal functions
@@ -40,12 +53,14 @@ function DramfCore.ProtectedFunctions:LoadFunctions(Sources: TableOfFunctions): 
 	end
 end
 
-function DramfCore.ProtectedFunctions:GetSharedValue(Index: any): any
-	return WaitForValueInTable(self.__Shared, Index)
+function DramfCore.ProtectedFunctions:GetSharedValue(Index: any, Timeout: number): any
+	assert(Index ~= nil, "No index for GetParentSharedValue call. Traceback:")
+	return DramfCore.ProtectedFunctions.WaitForValueInTable(self.__Shared, Index, Timeout)
 end
 
-function DramfCore.ProtectedFunctions:GetParentSharedValue(Index: any): any
-	return WaitForValueInTable(self.__ParentShared, Index) 
+function DramfCore.ProtectedFunctions:GetParentSharedValue(Index: any, Timeout: number): any
+	assert(Index ~= nil, "No index for GetParentSharedValue call. Traceback:")
+	return DramfCore.ProtectedFunctions.WaitForValueInTable(self.__ParentShared, Index, Timeout)
 end
 
 function DramfCore.ProtectedFunctions.NewDramfCore(Sources: TableOfFunctions, ParentShared: table | nil): {} -- Constructor, isn't meant to be used externally.
@@ -68,11 +83,11 @@ function DramfCore.ProtectedFunctions.NewDramfCore(Sources: TableOfFunctions, Pa
 				return self.__Functions[Index]
 			elseif Index == "Shared" then -- shared table refs
 				return self.__Shared
-			elseif Index == "ParentShared" then
+		   	elseif Index == "ParentShared" then
 				return self.__ParentShared
 			else
 				return function(...)
-					return WaitForValueInTable(self.__Functions, Index)(...)
+					return DramfCore.ProtectedFunctions.WaitForValueInTable(self.__Functions, Index)(...)
 				end
 			end
 		end,
@@ -80,10 +95,13 @@ function DramfCore.ProtectedFunctions.NewDramfCore(Sources: TableOfFunctions, Pa
 		__newindex = function(_, Index, Value)
 			if Index == "Shared" or Index == "ParentShared" then
 				warn("Blocking inserting", Index, "because index is used to refer to the Dramf's shared/parentshared table.")
+				warn(debug.traceback("Traceback:"))
 			elseif typeof(Value) ~= "function" then
 				warn("Blocking inserting", Value, "at", Index, "because value is not a function.")
+				warn(debug.traceback("Traceback:"))
 			elseif DramfCore.ProtectedFunctions[Index] ~= nil then
 				warn("Blocking inserting", Value, "at", Index, "because index shares a name with a ProtectedFunction.")
+				warn(debug.traceback("Traceback:"))
 			else
 				self.__Functions[Index] = Value
 			end

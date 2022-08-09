@@ -2,7 +2,8 @@ local libdramf = {}
 libdramf.DramfInstances = {}
 
 -- get variables
-local DramfCore = require(script:WaitForChild("dramfcore"))
+local CoreModule = script:WaitForChild("dramfcore")
+local DramfCore = require(CoreModule)
 
 -- type checking stuff
 type TableOfFunctions = {(...any?) -> (...any?)}
@@ -10,6 +11,7 @@ type TableOfFunctions = {(...any?) -> (...any?)}
 -- used to convert instances into a table f functions
 local function ConvertSourcesToFunctions(Source: Instance): {}
 	local NewSources = {}
+
 	local SourcesToSearch = Source:GetDescendants()
 	table.insert(SourcesToSearch, Source)
 
@@ -51,10 +53,19 @@ function libdramf:GetDramf(Sources: Instance | (any?) -> (any?) | TableOfFunctio
 		return FoundInstance
 	else
 		-- get new dramf
-		local NewDramf = DramfCore.NewDramfCore(Sources)
+		-- Make the new Dramf
+		local GlobalSources = ConvertSourcesToFunctions(CoreModule)
+		-- Combine tables, call for new DRAMF
+		table.move(Sources, 1, table.getn(Sources), table.getn(GlobalSources) + 1, GlobalSources)
+
+		local NewDramf = DramfCore.NewDramfCore(GlobalSources)
 		if DramfName then
 			self.DramfInstances[DramfName] = NewDramf
 		end
+
+		-- Load any modules parented to the dramfcore which act as global modules for this dramf ROBLOX instance
+		
+		-- Return the DRAMF
 		return NewDramf
 	end
 end
